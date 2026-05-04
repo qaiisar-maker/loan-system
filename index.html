@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loan Manager Pro</title>
+<meta name="description" content="Professional Loan Management System">
+<meta name="theme-color" content="#F5C400">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #F5C400;
+  --gold-dark: #D4A800;
+  --gold-light: #FFD740;
+  --blue: #2E6BE6;
+  --blue-dark: #1B4FBE;
+  --blue-deep: #1A3A8F;
+  --blue-light: #5B8BF0;
+  --green: #2ECC71;
+  --green-dark: #27AE60;
+  --red: #E74C3C;
+  --red-dark: #C0392B;
+  --white: #FFFFFF;
+  --bg: #F8F9FF;
+  --card: #FFFFFF;
+  --text: #1A2340;
+  --text-muted: #6B7A99;
+  --border: #E0E7FF;
+  --shadow: 0 4px 24px rgba(46,107,230,0.10);
+  --shadow-lg: 0 8px 40px rgba(46,107,230,0.18);
+  --radius: 18px;
+  --radius-sm: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ========== PASSWORD SCREEN ========== */
+#passwordScreen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(135deg, #F5C400 0%, #FFD740 40%, #2E6BE6 100%);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  transition: opacity 0.5s ease;
+}
+
+.lock-card {
+  background: white;
+  border-radius: 28px;
+  padding: 50px 44px 44px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  text-align: center;
+  width: 90%; max-width: 380px;
+  animation: slideUp 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(60px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.lock-icon {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 8px 24px rgba(245,196,0,0.4);
+}
+
+.lock-icon svg { width: 38px; height: 38px; fill: white; }
+
+.lock-card h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px; color: var(--text); margin-bottom: 6px;
+}
+.lock-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 28px; }
+
+.pin-display {
+  display: flex; gap: 12px; justify-content: center; margin-bottom: 28px;
+}
+.pin-dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2.5px solid var(--blue);
+  transition: all 0.2s;
+}
+.pin-dot.filled { background: var(--blue); transform: scale(1.1); }
+
+.pin-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.pin-btn {
+  background: var(--bg); border: 2px solid var(--border);
+  border-radius: 14px; padding: 16px; font-size: 20px; font-weight: 600;
+  color: var(--text); cursor: pointer; transition: all 0.15s;
+  font-family: 'Poppins', sans-serif;
+}
+.pin-btn:hover { background: var(--gold-light); border-color: var(--gold); transform: scale(0.97); }
+.pin-btn:active { transform: scale(0.93); }
+.pin-btn.del { color: var(--red); font-size: 16px; }
+.pin-btn.enter { background: var(--blue); color: white; border-color: var(--blue); font-size: 14px; }
+.pin-btn.enter:hover { background: var(--blue-dark); }
+.pin-error { color: var(--red); font-size: 12px; margin-top: 12px; min-height: 18px; }
+.change-pin-link { color: var(--blue); font-size: 12px; cursor: pointer; margin-top: 14px; display: inline-block; text-decoration: underline; }
+
+/* ========== APP LAYOUT ========== */
+#app { display: none; min-height: 100vh; flex-direction: column; }
+
+/* TOP NAV */
+.top-nav {
+  background: linear-gradient(90deg, var(--blue-deep) 0%, var(--blue) 100%);
+  color: white; padding: 0 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 20px rgba(46,107,230,0.25);
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-logo {
+  width: 38px; height: 38px; background: var(--gold);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+}
+.nav-logo svg { width: 22px; height: 22px; fill: white; }
+.nav-title { font-weight: 700; font-size: 18px; letter-spacing: 0.3px; }
+.nav-subtitle { font-size: 10px; opacity: 0.7; font-weight: 400; }
+.nav-right { display: flex; gap: 10px; align-items: center; }
+.nav-btn {
+  background: rgba(255,255,255,0.12); border: none; color: white;
+  padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 12px;
+  font-family: 'Poppins', sans-serif; transition: all 0.2s; font-weight: 500;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.22); }
+
+/* BOTTOM NAV */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: white;
+  box-shadow: 0 -4px 24px rgba(46,107,230,0.12);
+  display: flex; border-top: 2px solid var(--border);
+}
+.bnav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 10px 4px; cursor: pointer;
+  transition: all 0.2s; position: relative; border: none; background: none;
+  font-family: 'Poppins', sans-serif;
+}
+.bnav-item.active { color: var(--blue); }
+.bnav-item:not(.active) { color: var(--text-muted); }
+.bnav-icon {
+  width: 38px; height: 38px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 3px; transition: all 0.2s;
+}
+.bnav-item.active .bnav-icon { background: rgba(46,107,230,0.12); }
+.bnav-icon svg { width: 20px; height: 20px; }
+.bnav-label { font-size: 9.5px; font-weight: 600; letter-spacing: 0.2px; }
+
+/* CONTENT */
+.content { padding: 20px 16px 90px; max-width: 640px; margin: 0 auto; width: 100%; }
+
+/* DASHBOARD HEADER */
+.dash-header {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  border-radius: var(--radius); padding: 24px 22px; margin-bottom: 20px;
+  color: var(--text); position: relative; overflow: hidden;
+}
+.dash-header::before {
+  content: ''; position: absolute; top: -30px; right: -30px;
+  width: 120px; height: 120px; border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+}
+.dash-header::after {
+  content: ''; position: absolute; bottom: -20px; right: 60px;
+  width: 70px; height: 70px; border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+}
+.dash-label { font-size: 12px; font-weight: 600; opacity: 0.7; letter-spacing: 1px; text-transform: uppercase; }
+.dash-amount { font-size: 36px; font-weight: 800; margin: 4px 0; font-family: 'Playfair Display', serif; }
+.dash-sub { font-size: 12px; opacity: 0.75; }
+
+.stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.stat-card {
+  background: white; border-radius: var(--radius-sm); padding: 18px 16px;
+  box-shadow: var(--shadow); border: 1.5px solid var(--border);
+}
+.stat-card.green { border-left: 4px solid var(--green); }
+.stat-card.red { border-left: 4px solid var(--red); }
+.stat-card.blue { border-left: 4px solid var(--blue); }
+.stat-label { font-size: 10.5px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+.stat-value { font-size: 20px; font-weight: 800; }
+.stat-card.green .stat-value { color: var(--green-dark); }
+.stat-card.red .stat-value { color: var(--red-dark); }
+.stat-card.blue .stat-value { color: var(--blue); }
+
+/* SECTION CARD */
+.section-card {
+  background: white; border-radius: var(--radius);
+  box-shadow: var(--shadow); border: 1.5px solid var(--border);
+  padding: 22px 20px; margin-bottom: 16px;
+}
+.section-title {
+  font-size: 16px; font-weight: 700; color: var(--text);
+  margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+}
+.section-title .badge {
+  background: var(--gold); color: var(--text); font-size: 10px;
+  padding: 3px 10px; border-radius: 20px; font-weight: 700;
+}
+
+/* FORM ELEMENTS */
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block; font-size: 12px; font-weight: 600;
+  color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.form-input {
+  width: 100%; padding: 13px 16px; border: 2px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 14px; font-family: 'Poppins', sans-serif;
+  color: var(--text); background: var(--bg); transition: all 0.2s;
+  outline: none;
+}
+.form-input:focus { border-color: var(--blue); background: white; box-shadow: 0 0 0 3px rgba(46,107,230,0.1); }
+.form-input::placeholder { color: #B0BAD4; }
+
+.btn {
+  width: 100%; padding: 14px; border: none; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  font-family: 'Poppins', sans-serif; transition: all 0.2s; letter-spacing: 0.3px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
+  color: white; box-shadow: 0 4px 16px rgba(46,107,230,0.3);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(46,107,230,0.4); }
+.btn-primary:active { transform: translateY(0); }
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  color: var(--text); box-shadow: 0 4px 16px rgba(245,196,0,0.3);
+}
+.btn-success {
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+  color: white; box-shadow: 0 4px 16px rgba(46,204,113,0.3);
+}
+.btn-sm {
+  width: auto; padding: 7px 14px; font-size: 12px; border-radius: 8px;
+}
+.btn-danger { background: var(--red); color: white; }
+.btn-edit { background: var(--blue); color: white; }
+
+/* TABLE / REPORT */
+.report-wrap { overflow-x: auto; border-radius: var(--radius-sm); }
+.report-table {
+  width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 480px;
+}
+.report-table th {
+  background: linear-gradient(90deg, var(--blue-deep), var(--blue));
+  color: white; padding: 12px 12px; text-align: left; font-weight: 600;
+  letter-spacing: 0.3px; font-size: 11px; text-transform: uppercase;
+}
+.report-table th:first-child { border-radius: 10px 0 0 0; }
+.report-table th:last-child { border-radius: 0 10px 0 0; }
+.report-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+.report-table tr:last-child td { border-bottom: none; }
+.report-table tr:hover td { background: rgba(46,107,230,0.04); }
+.report-table .amount-col { font-weight: 700; color: var(--blue); }
+.report-table .amount-col.given { color: var(--red-dark); }
+.report-table .amount-col.returned { color: var(--green-dark); }
+.report-table .actions { display: flex; gap: 6px; }
+
+.total-row { background: rgba(245,196,0,0.1) !important; }
+.total-row td { font-weight: 700 !important; border-top: 2px solid var(--gold) !important; }
+
+.empty-state {
+  text-align: center; padding: 40px 20px; color: var(--text-muted);
+}
+.empty-state svg { width: 48px; height: 48px; opacity: 0.3; margin-bottom: 12px; }
+.empty-state p { font-size: 13px; }
+
+/* DOWNLOAD BTN */
+.download-bar {
+  display: flex; justify-content: flex-end; margin-bottom: 12px; gap: 8px; flex-wrap: wrap;
+}
+.download-bar .btn-sm { display: flex; align-items: center; gap: 6px; }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(26,35,64,0.6);
+  z-index: 200; display: none; align-items: center; justify-content: center;
+  padding: 20px; backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: white; border-radius: var(--radius); padding: 28px 24px;
+  width: 100%; max-width: 440px; box-shadow: var(--shadow-lg);
+  animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes modalIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text); }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-actions .btn { flex: 1; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: white; padding: 12px 24px;
+  border-radius: 30px; font-size: 13px; font-weight: 500;
+  z-index: 999; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+.toast.success { background: var(--green-dark); }
+.toast.error { background: var(--red-dark); }
+
+/* PAGE TABS */
+.page { display: none; }
+.page.active { display: block; }
+
+.tab-row {
+  display: flex; gap: 8px; margin-bottom: 18px; overflow-x: auto;
+  scrollbar-width: none; padding-bottom: 2px;
+}
+.tab-row::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 8px 18px; border-radius: 30px; font-size: 12px; font-weight: 600;
+  border: 2px solid var(--border); background: white; color: var(--text-muted);
+  cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: 'Poppins', sans-serif;
+}
+.tab-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+/* CHANGE PIN */
+.change-pin-form { display: none; margin-top: 16px; }
+.change-pin-form.open { display: block; }
+
+/* DATE PICKER WRAPPER */
+.date-picker-wrap {
+  position: relative; display: flex; align-items: center;
+}
+.date-picker-wrap .form-input {
+  padding-right: 44px; cursor: pointer; letter-spacing: 0.5px;
+}
+.date-picker-icon {
+  position: absolute; right: 14px; color: var(--blue); cursor: pointer;
+  pointer-events: none;
+}
+.date-picker-icon svg { width: 20px; height: 20px; fill: var(--blue); }
+input[type="date"].hidden-date {
+  position: absolute; opacity: 0; width: 100%; height: 100%;
+  top: 0; left: 0; cursor: pointer; z-index: 2;
+}
+
+/* PERSON CARDS */
+.person-section { margin-bottom: 20px; }
+.person-section-title {
+  font-size: 13px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+  padding-left: 4px;
+}
+.person-card {
+  background: white; border-radius: var(--radius);
+  box-shadow: var(--shadow); border: 1.5px solid var(--border);
+  margin-bottom: 14px; overflow: hidden;
+}
+.person-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px; cursor: pointer; transition: background 0.2s;
+  background: linear-gradient(90deg, rgba(46,107,230,0.06), rgba(245,196,0,0.06));
+}
+.person-card-header:hover { background: rgba(46,107,230,0.1); }
+.person-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--blue-deep));
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 800; font-size: 16px;
+  flex-shrink: 0; margin-right: 12px;
+}
+.person-info { flex: 1; }
+.person-name { font-weight: 700; font-size: 15px; color: var(--text); }
+.person-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.person-balance {
+  text-align: right; flex-shrink: 0;
+}
+.person-balance .bal-amount { font-weight: 800; font-size: 15px; }
+.person-balance .bal-label { font-size: 10px; color: var(--text-muted); }
+.person-balance.owe .bal-amount { color: var(--red-dark); }
+.person-balance.clear .bal-amount { color: var(--green-dark); }
+.person-card-chevron {
+  margin-left: 10px; transition: transform 0.3s; color: var(--text-muted);
+}
+.person-card.open .person-card-chevron { transform: rotate(180deg); }
+
+.person-card-body { display: none; padding: 0 16px 16px; }
+.person-card.open .person-card-body { display: block; }
+
+.person-timeline { position: relative; padding-left: 22px; }
+.person-timeline::before {
+  content: ''; position: absolute; left: 7px; top: 0; bottom: 0;
+  width: 2px; background: var(--border);
+}
+.timeline-item {
+  position: relative; margin-bottom: 12px; padding: 10px 12px;
+  border-radius: var(--radius-sm); background: var(--bg);
+  border: 1.5px solid var(--border);
+}
+.timeline-item::before {
+  content: ''; position: absolute; left: -19px; top: 50%;
+  transform: translateY(-50%);
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2.5px solid white;
+}
+.timeline-item.given::before { background: var(--red); }
+.timeline-item.returned::before { background: var(--green); }
+
+.tl-row { display: flex; justify-content: space-between; align-items: center; }
+.tl-type { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.tl-type.given { color: var(--red-dark); }
+.tl-type.returned { color: var(--green-dark); }
+.tl-amount { font-weight: 800; font-size: 14px; }
+.tl-amount.given { color: var(--red-dark); }
+.tl-amount.returned { color: var(--green-dark); }
+.tl-date { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+.tl-remark { font-size: 11px; color: var(--text-muted); margin-top: 3px; font-style: italic; }
+.tl-actions { display: flex; gap: 5px; margin-top: 6px; }
+
+.person-summary {
+  background: linear-gradient(135deg, rgba(46,107,230,0.08), rgba(245,196,0,0.08));
+  border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 12px;
+  display: flex; justify-content: space-around; text-align: center;
+  border: 1.5px solid var(--border);
+}
+.ps-item .ps-val { font-weight: 800; font-size: 15px; }
+.ps-item .ps-lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.ps-item:nth-child(1) .ps-val { color: var(--red-dark); }
+.ps-item:nth-child(2) .ps-val { color: var(--green-dark); }
+.ps-item:nth-child(3) .ps-val { color: var(--blue); }
+
+.search-input-wrap { margin-bottom: 14px; position: relative; }
+.search-input-wrap svg {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 16px; fill: var(--text-muted);
+}
+.search-input-wrap input {
+  padding-left: 36px;
+}
+
+/* IMPORT/EXPORT */
+.ie-tabs { display: flex; gap: 0; margin-bottom: 20px; border-radius: 10px; overflow: hidden; border: 2px solid var(--border); }
+.ie-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: var(--bg); color: var(--text-muted); font-family: 'Poppins', sans-serif; transition: all 0.2s; }
+.ie-tab.active { background: var(--blue); color: white; }
+.ie-panel { display: none; }
+.ie-panel.active { display: block; }
+.ie-option { border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 14px; }
+.ie-option:hover { border-color: var(--blue); background: rgba(46,107,230,0.04); }
+.ie-option .ie-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.ie-option.json .ie-icon { background: rgba(46,107,230,0.12); }
+.ie-option.excel .ie-icon { background: rgba(46,204,113,0.12); }
+.ie-option .ie-text strong { display: block; font-size: 14px; font-weight: 700; color: var(--text); }
+.ie-option .ie-text span { font-size: 11px; color: var(--text-muted); }
+.import-drop { border: 2.5px dashed var(--border); border-radius: var(--radius-sm); padding: 30px 20px; text-align: center; color: var(--text-muted); margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }
+.import-drop:hover { border-color: var(--blue); background: rgba(46,107,230,0.04); }
+.import-drop svg { width: 36px; height: 36px; fill: var(--text-muted); margin-bottom: 8px; opacity: 0.5; }
+.import-drop p { font-size: 13px; }
+.import-drop small { font-size: 11px; }
+
+.loading {
+  display: flex; align-items: center; justify-content: center;
+  height: 200px; color: var(--text-muted); flex-direction: column; gap: 12px;
+}
+.spinner {
+  width: 36px; height: 36px; border: 3px solid var(--border);
+  border-top-color: var(--blue); border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD SCREEN -->
+<div id="passwordScreen">
+  <div class="lock-card">
+    <div class="lock-icon">
+      <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+    </div>
+    <h2>Loan Manager Pro</h2>
+    <p>Enter your PIN to continue</p>
+    <div class="pin-display">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-grid">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn del" onclick="pinClear()">⌫ Del</button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn enter" onclick="pinEnter()">Enter</button>
+    </div>
+    <div class="pin-error" id="pinError"></div>
+    <span class="change-pin-link" onclick="toggleChangePinForm()">Change PIN</span>
+    <div class="change-pin-form" id="changePinForm">
+      <input class="form-input" type="password" id="newPin" placeholder="New 4-digit PIN" maxlength="4" style="margin-bottom:8px">
+      <input class="form-input" type="password" id="confirmPin" placeholder="Confirm PIN" maxlength="4" style="margin-bottom:8px">
+      <button class="btn btn-primary" onclick="saveNewPin()">Save New PIN</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <!-- Top Nav -->
+  <nav class="top-nav">
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+      </div>
+      <div>
+        <div class="nav-title">Loan Manager Pro</div>
+        <div class="nav-subtitle">Professional Finance Tracker</div>
+      </div>
+    </div>
+    <div class="nav-right">
+      <button class="nav-btn" onclick="openImportExport()">📦 Backup</button>
+      <button class="nav-btn" onclick="lockApp()">🔒 Lock</button>
+    </div>
+  </nav>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- PAGE: DASHBOARD -->
+    <div class="page active" id="pageDash">
+      <div class="dash-header" id="dashHeader">
+        <div class="dash-label">💰 Total Cash In Hand</div>
+        <div class="dash-amount" id="dashTotal">Rs. 0</div>
+        <div class="dash-sub">All received amounts minus loans given out</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card green">
+          <div class="stat-label">📥 Total Received</div>
+          <div class="stat-value" id="statReceived">Rs. 0</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">📤 Loans Given</div>
+          <div class="stat-value" id="statGiven">Rs. 0</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">🔄 Returned</div>
+          <div class="stat-value" id="statReturned">Rs. 0</div>
+        </div>
+        <div class="stat-card" style="border-left:4px solid var(--gold)">
+          <div class="stat-label">⏳ Outstanding</div>
+          <div class="stat-value" style="color:var(--gold-dark)" id="statOutstanding">Rs. 0</div>
+        </div>
+      </div>
+
+      <!-- Add Amount Form -->
+      <div class="section-card">
+        <div class="section-title">
+          <span>➕ Add Amount</span>
+          <span class="badge">New Entry</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <div class="date-picker-wrap">
+            <input class="form-input" type="text" id="addDate" placeholder="dd/mm/yy" maxlength="8" readonly>
+            <input type="date" class="hidden-date" onchange="setDateFromPicker(this,'addDate')">
+            <span class="date-picker-icon"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (Rs.)</label>
+          <input class="form-input" type="number" id="addAmount" placeholder="Enter amount" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Remarks</label>
+          <input class="form-input" type="text" id="addRemarks" placeholder="Optional note...">
+        </div>
+        <button class="btn btn-gold" onclick="saveAddAmount()">💾 Save Amount</button>
+      </div>
+
+      <!-- Loan Given Form -->
+      <div class="section-card">
+        <div class="section-title">
+          <span>📤 Loan Given</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <div class="date-picker-wrap">
+            <input class="form-input" type="text" id="givenDate" placeholder="dd/mm/yy" maxlength="8" readonly>
+            <input type="date" class="hidden-date" onchange="setDateFromPicker(this,'givenDate')">
+            <span class="date-picker-icon"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Borrower Name</label>
+          <input class="form-input" type="text" id="givenName" placeholder="Enter name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (Rs.)</label>
+          <input class="form-input" type="number" id="givenAmount" placeholder="Enter amount" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Remarks</label>
+          <input class="form-input" type="text" id="givenRemarks" placeholder="Optional note...">
+        </div>
+        <button class="btn btn-primary" onclick="saveLoanGiven()">💾 Save Loan Given</button>
+      </div>
+
+      <!-- Loan Return Form -->
+      <div class="section-card">
+        <div class="section-title">
+          <span>🔄 Loan Return</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <div class="date-picker-wrap">
+            <input class="form-input" type="text" id="returnDate" placeholder="dd/mm/yy" maxlength="8" readonly>
+            <input type="date" class="hidden-date" onchange="setDateFromPicker(this,'returnDate')">
+            <span class="date-picker-icon"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Borrower Name</label>
+          <input class="form-input" type="text" id="returnName" placeholder="Enter name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (Rs.)</label>
+          <input class="form-input" type="number" id="returnAmount" placeholder="Enter amount" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Remarks</label>
+          <input class="form-input" type="text" id="returnRemarks" placeholder="Optional note...">
+        </div>
+        <button class="btn btn-success" onclick="saveLoanReturn()">💾 Save Return</button>
+      </div>
+    </div>
+
+    <!-- PAGE: AMOUNT REPORT -->
+    <div class="page" id="pageReport">
+      <div class="section-card">
+        <div class="section-title">📊 Amount Report</div>
+        <div class="download-bar">
+          <button class="btn btn-sm btn-primary" onclick="downloadReport('amountTable','Amount_Report')">⬇ Download PNG</button>
+        </div>
+        <div class="report-wrap" id="amountTable">
+          <div class="loading"><div class="spinner"></div><span>Loading...</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: LOAN GIVEN REPORT -->
+    <div class="page" id="pageGiven">
+      <div class="section-card">
+        <div class="section-title">📤 Loans Given Report</div>
+        <div class="download-bar">
+          <button class="btn btn-sm btn-primary" onclick="downloadReport('givenTable','Loan_Given_Report')">⬇ Download PNG</button>
+        </div>
+        <div class="report-wrap" id="givenTable">
+          <div class="loading"><div class="spinner"></div><span>Loading...</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: LOAN RETURN REPORT -->
+    <div class="page" id="pageReturn">
+      <div class="section-card">
+        <div class="section-title">🔄 Loan Return Report</div>
+        <div class="download-bar">
+          <button class="btn btn-sm btn-primary" onclick="downloadReport('returnTable','Loan_Return_Report')">⬇ Download PNG</button>
+        </div>
+        <div class="report-wrap" id="returnTable">
+          <div class="loading"><div class="spinner"></div><span>Loading...</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: PERSON REPORT -->
+    <div class="page" id="pagePerson">
+      <div class="section-card" style="padding-bottom:10px">
+        <div class="section-title">👤 Report By Person</div>
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input class="form-input" type="text" id="personSearch" placeholder="Search by name..." oninput="filterPersonCards()">
+        </div>
+      </div>
+      <div id="personCards"></div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="bnav-item active" id="bnDash" onclick="showPage('Dash')">
+      <div class="bnav-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      </div>
+      <span class="bnav-label">Dashboard</span>
+    </button>
+    <button class="bnav-item" id="bnReport" onclick="showPage('Report')">
+      <div class="bnav-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm3-4H7v-2h8v2zm0-4H7V7h8v2z"/></svg>
+      </div>
+      <span class="bnav-label">Received</span>
+    </button>
+    <button class="bnav-item" id="bnGiven" onclick="showPage('Given')">
+      <div class="bnav-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.34C18 2.54 15.6.6 12.81.6c-1.74 0-3.4.88-4.35 2.29L12 7 15.54 2.89C16.1 2.33 16.87 2 17.66 2c1.85 0 3.34 1.49 3.34 3.34 0 .78-.28 1.49-.72 2.06L20 6zm-8 14l-8-8h4V6h8v6h4l-8 8z"/></svg>
+      </div>
+      <span class="bnav-label">Given</span>
+    </button>
+    <button class="bnav-item" id="bnReturn" onclick="showPage('Return')">
+      <div class="bnav-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+      </div>
+      <span class="bnav-label">Returns</span>
+    </button>
+    <button class="bnav-item" id="bnPerson" onclick="showPage('Person')">
+      <div class="bnav-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      </div>
+      <span class="bnav-label">By Name</span>
+    </button>
+  </nav>
+</div>
+
+<!-- IMPORT/EXPORT MODAL -->
+<div class="modal-overlay" id="ieModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-title">📦 Data Backup & Restore</div>
+    <div class="ie-tabs">
+      <button class="ie-tab active" onclick="switchIeTab('export')">⬆️ Export / Backup</button>
+      <button class="ie-tab" onclick="switchIeTab('import')">⬇️ Import / Restore</button>
+    </div>
+
+    <!-- EXPORT PANEL -->
+    <div class="ie-panel active" id="ieExportPanel">
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Apna poora data download karein. Backup rakhein ya doosre device pe use karein.</p>
+      <div class="ie-option json" onclick="exportJSON()">
+        <div class="ie-icon">📄</div>
+        <div class="ie-text">
+          <strong>JSON Backup (.json)</strong>
+          <span>Sab data ek file mein — recommended backup format</span>
+        </div>
+      </div>
+      <div class="ie-option excel" onclick="exportCSV('amounts')">
+        <div class="ie-icon">📊</div>
+        <div class="ie-text">
+          <strong>Amount Report (.csv)</strong>
+          <span>Excel mein kholo — sirf received amounts</span>
+        </div>
+      </div>
+      <div class="ie-option" style="border-color:var(--border)" onclick="exportCSV('loans_given')">
+        <div class="ie-icon" style="background:rgba(231,76,60,0.1)">📤</div>
+        <div class="ie-text">
+          <strong>Loan Given Report (.csv)</strong>
+          <span>Excel mein kholo — sirf diye gaye loans</span>
+        </div>
+      </div>
+      <div class="ie-option" style="border-color:var(--border)" onclick="exportCSV('loans_returned')">
+        <div class="ie-icon" style="background:rgba(46,204,113,0.1)">📥</div>
+        <div class="ie-text">
+          <strong>Loan Return Report (.csv)</strong>
+          <span>Excel mein kholo — sirf wapas kiye loans</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMPORT PANEL -->
+    <div class="ie-panel" id="ieImportPanel">
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">⚠️ Import karne se <strong>poora purana data replace</strong> ho jaega. Pehle backup zaroor lein!</p>
+      <div class="import-drop" onclick="document.getElementById('jsonFileInput').click()">
+        <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+        <p><strong>JSON File Choose Karein</strong></p>
+        <small>Sirf .json backup file — jo pehle export ki ho</small>
+      </div>
+      <input type="file" id="jsonFileInput" accept=".json" style="display:none" onchange="importJSON(this)">
+      <div id="importStatus" style="font-size:12px;min-height:20px;text-align:center"></div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeIeModal()">Bند کریں</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <div class="modal-title" id="editModalTitle">Edit Entry</div>
+    <div id="editModalBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveEdit()">💾 Save</button>
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== GLOBALS ====================
+let db = null;
+let currentPage = 'Dash';
+let editContext = { table: '', id: '' };
+const DEFAULT_PIN = '1234';
+
+// ==================== DB INIT ====================
+async function initDB() {
+  const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}` });
+  const saved = localStorage.getItem('loanDB');
+  if (saved) {
+    const arr = Uint8Array.from(atob(saved), c => c.charCodeAt(0));
+    db = new SQL.Database(arr);
+  } else {
+    db = new SQL.Database();
+  }
+  db.run(`CREATE TABLE IF NOT EXISTS amounts (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, amount REAL, remarks TEXT);`);
+  db.run(`CREATE TABLE IF NOT EXISTS loans_given (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, name TEXT, amount REAL, remarks TEXT);`);
+  db.run(`CREATE TABLE IF NOT EXISTS loans_returned (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, name TEXT, amount REAL, remarks TEXT);`);
+  saveDB();
+}
+
+function saveDB() {
+  const data = db.export();
+  const b64 = btoa(String.fromCharCode(...data));
+  localStorage.setItem('loanDB', b64);
+}
+
+// ==================== PIN ====================
+let pinInput = '';
+function pinPress(v) {
+  if (pinInput.length >= 4) return;
+  pinInput += v;
+  updateDots();
+}
+function pinClear() {
+  pinInput = pinInput.slice(0,-1);
+  updateDots();
+}
+function updateDots() {
+  for (let i=0;i<4;i++) {
+    document.getElementById('d'+i).classList.toggle('filled', i < pinInput.length);
+  }
+}
+function pinEnter() {
+  const stored = localStorage.getItem('appPIN') || DEFAULT_PIN;
+  if (pinInput === stored) {
+    document.getElementById('passwordScreen').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('passwordScreen').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      refreshDashboard();
+      const today = todayDate();
+      ['addDate','givenDate','returnDate'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && !el.value) el.value = today;
+      });
+    }, 400);
+  } else {
+    document.getElementById('pinError').textContent = '❌ Incorrect PIN. Try again.';
+    pinInput = '';
+    updateDots();
+    setTimeout(() => document.getElementById('pinError').textContent = '', 2000);
+  }
+}
+function lockApp() {
+  pinInput = '';
+  updateDots();
+  document.getElementById('pinError').textContent = '';
+  document.getElementById('passwordScreen').style.display = 'flex';
+  document.getElementById('passwordScreen').style.opacity = '1';
+  document.getElementById('app').style.display = 'none';
+}
+function toggleChangePinForm() {
+  document.getElementById('changePinForm').classList.toggle('open');
+}
+function saveNewPin() {
+  const np = document.getElementById('newPin').value.trim();
+  const cp = document.getElementById('confirmPin').value.trim();
+  if (!/^\d{4}$/.test(np)) return showToast('PIN must be exactly 4 digits', 'error');
+  if (np !== cp) return showToast('PINs do not match', 'error');
+  localStorage.setItem('appPIN', np);
+  showToast('PIN changed successfully!', 'success');
+  document.getElementById('changePinForm').classList.remove('open');
+  document.getElementById('newPin').value = '';
+  document.getElementById('confirmPin').value = '';
+}
+
+// ==================== DATE PICKER ====================
+function setDateFromPicker(pickerEl, targetId) {
+  const val = pickerEl.value; // yyyy-mm-dd
+  if (!val) return;
+  const [y, m, d] = val.split('-');
+  document.getElementById(targetId).value = `${d}/${m}/${y.slice(-2)}`;
+}
+function formatDate(el) {
+  let v = el.value.replace(/\D/g,'');
+  if (v.length > 2) v = v.slice(0,2)+'/'+v.slice(2);
+  if (v.length > 5) v = v.slice(0,5)+'/'+v.slice(5);
+  el.value = v.slice(0,8);
+}
+function todayDate() {
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yy = String(d.getFullYear()).slice(-2);
+  return `${dd}/${mm}/${yy}`;
+}
+function validateDate(v) {
+  return /^\d{2}\/\d{2}\/\d{2}$/.test(v);
+}
+
+// ==================== PAGES ====================
+function showPage(name) {
+  currentPage = name;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page'+name).classList.add('active');
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('bn'+name).classList.add('active');
+  if (name==='Report') renderAmountTable();
+  if (name==='Given') renderGivenTable();
+  if (name==='Return') renderReturnTable();
+  if (name==='Person') renderPersonCards();
+  if (name==='Dash') refreshDashboard();
+}
+
+// ==================== SAVE ENTRIES ====================
+function saveAddAmount() {
+  const date = document.getElementById('addDate').value.trim();
+  const amount = parseFloat(document.getElementById('addAmount').value);
+  const remarks = document.getElementById('addRemarks').value.trim();
+  if (!validateDate(date)) return showToast('Please enter date in dd/mm/yy format', 'error');
+  if (!amount || amount <= 0) return showToast('Please enter a valid amount', 'error');
+  db.run(`INSERT INTO amounts (date,amount,remarks) VALUES (?,?,?)`, [date, amount, remarks]);
+  saveDB(); refreshDashboard();
+  document.getElementById('addDate').value=todayDate();
+  document.getElementById('addAmount').value='';
+  document.getElementById('addRemarks').value='';
+  showToast('✅ Amount saved!', 'success');
+}
+
+function saveLoanGiven() {
+  const date = document.getElementById('givenDate').value.trim();
+  const name = document.getElementById('givenName').value.trim();
+  const amount = parseFloat(document.getElementById('givenAmount').value);
+  const remarks = document.getElementById('givenRemarks').value.trim();
+  if (!validateDate(date)) return showToast('Please enter date in dd/mm/yy format', 'error');
+  if (!name) return showToast('Please enter borrower name', 'error');
+  if (!amount || amount <= 0) return showToast('Please enter a valid amount', 'error');
+  db.run(`INSERT INTO loans_given (date,name,amount,remarks) VALUES (?,?,?,?)`, [date, name, amount, remarks]);
+  saveDB(); refreshDashboard();
+  document.getElementById('givenDate').value=todayDate();
+  document.getElementById('givenName').value='';
+  document.getElementById('givenAmount').value='';
+  document.getElementById('givenRemarks').value='';
+  showToast('✅ Loan Given saved!', 'success');
+}
+
+function saveLoanReturn() {
+  const date = document.getElementById('returnDate').value.trim();
+  const name = document.getElementById('returnName').value.trim();
+  const amount = parseFloat(document.getElementById('returnAmount').value);
+  const remarks = document.getElementById('returnRemarks').value.trim();
+  if (!validateDate(date)) return showToast('Please enter date in dd/mm/yy format', 'error');
+  if (!name) return showToast('Please enter borrower name', 'error');
+  if (!amount || amount <= 0) return showToast('Please enter a valid amount', 'error');
+  db.run(`INSERT INTO loans_returned (date,name,amount,remarks) VALUES (?,?,?,?)`, [date, name, amount, remarks]);
+  saveDB(); refreshDashboard();
+  document.getElementById('returnDate').value=todayDate();
+  document.getElementById('returnName').value='';
+  document.getElementById('returnAmount').value='';
+  document.getElementById('returnRemarks').value='';
+  showToast('✅ Loan Return saved!', 'success');
+}
+
+// ==================== DASHBOARD ====================
+function refreshDashboard() {
+  const totalReceived = queryScalar(`SELECT COALESCE(SUM(amount),0) FROM amounts`);
+  const totalGiven = queryScalar(`SELECT COALESCE(SUM(amount),0) FROM loans_given`);
+  const totalReturned = queryScalar(`SELECT COALESCE(SUM(amount),0) FROM loans_returned`);
+  const outstanding = totalGiven - totalReturned;
+  const cashInHand = totalReceived - outstanding;
+
+  document.getElementById('dashTotal').textContent = `Rs. ${fmt(cashInHand)}`;
+  document.getElementById('statReceived').textContent = `Rs. ${fmt(totalReceived)}`;
+  document.getElementById('statGiven').textContent = `Rs. ${fmt(totalGiven)}`;
+  document.getElementById('statReturned').textContent = `Rs. ${fmt(totalReturned)}`;
+  document.getElementById('statOutstanding').textContent = `Rs. ${fmt(outstanding)}`;
+}
+
+function queryScalar(sql) {
+  const res = db.exec(sql);
+  return res.length ? (res[0].values[0][0] || 0) : 0;
+}
+
+function queryAll(sql) {
+  const res = db.exec(sql);
+  if (!res.length) return { cols: [], rows: [] };
+  return { cols: res[0].columns, rows: res[0].values };
+}
+
+function fmt(n) {
+  n = parseFloat(n) || 0;
+  return n.toLocaleString('en-PK', {minimumFractionDigits:0});
+}
+
+// ==================== TABLES ====================
+function renderAmountTable() {
+  const { cols, rows } = queryAll(`SELECT id,date,amount,remarks FROM amounts ORDER BY id DESC`);
+  const el = document.getElementById('amountTable');
+  if (!rows.length) { el.innerHTML = emptyState('No amount entries yet'); return; }
+  let total = 0;
+  let html = `<table class="report-table"><thead><tr>
+    <th>#</th><th>Date</th><th>Amount (Rs.)</th><th>Remarks</th><th>Actions</th>
+  </tr></thead><tbody>`;
+  rows.forEach((r,i) => {
+    total += r[2];
+    html += `<tr>
+      <td>${i+1}</td>
+      <td>${r[1]}</td>
+      <td class="amount-col">Rs. ${fmt(r[2])}</td>
+      <td>${r[3]||'-'}</td>
+      <td class="actions">
+        <button class="btn btn-sm btn-edit" onclick="openEdit('amounts',${r[0]})">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteEntry('amounts',${r[0]})">🗑️</button>
+      </td>
+    </tr>`;
+  });
+  html += `<tr class="total-row"><td colspan="2"><b>TOTAL</b></td><td class="amount-col"><b>Rs. ${fmt(total)}</b></td><td colspan="2"></td></tr>`;
+  html += `</tbody></table>`;
+  el.innerHTML = html;
+}
+
+function renderGivenTable() {
+  const { cols, rows } = queryAll(`SELECT id,date,name,amount,remarks FROM loans_given ORDER BY id DESC`);
+  const el = document.getElementById('givenTable');
+  if (!rows.length) { el.innerHTML = emptyState('No loans given yet'); return; }
+  let total = 0;
+  let html = `<table class="report-table"><thead><tr>
+    <th>#</th><th>Date</th><th>Name</th><th>Amount (Rs.)</th><th>Remarks</th><th>Actions</th>
+  </tr></thead><tbody>`;
+  rows.forEach((r,i) => {
+    total += r[3];
+    html += `<tr>
+      <td>${i+1}</td>
+      <td>${r[1]}</td>
+      <td><b>${r[2]}</b></td>
+      <td class="amount-col given">Rs. ${fmt(r[3])}</td>
+      <td>${r[4]||'-'}</td>
+      <td class="actions">
+        <button class="btn btn-sm btn-edit" onclick="openEdit('loans_given',${r[0]})">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteEntry('loans_given',${r[0]})">🗑️</button>
+      </td>
+    </tr>`;
+  });
+  html += `<tr class="total-row"><td colspan="3"><b>TOTAL</b></td><td class="amount-col given"><b>Rs. ${fmt(total)}</b></td><td colspan="2"></td></tr>`;
+  html += `</tbody></table>`;
+  el.innerHTML = html;
+}
+
+function renderReturnTable() {
+  const { cols, rows } = queryAll(`SELECT id,date,name,amount,remarks FROM loans_returned ORDER BY id DESC`);
+  const el = document.getElementById('returnTable');
+  if (!rows.length) { el.innerHTML = emptyState('No loan returns yet'); return; }
+  let total = 0;
+  let html = `<table class="report-table"><thead><tr>
+    <th>#</th><th>Date</th><th>Name</th><th>Amount (Rs.)</th><th>Remarks</th><th>Actions</th>
+  </tr></thead><tbody>`;
+  rows.forEach((r,i) => {
+    total += r[3];
+    html += `<tr>
+      <td>${i+1}</td>
+      <td>${r[1]}</td>
+      <td><b>${r[2]}</b></td>
+      <td class="amount-col returned">Rs. ${fmt(r[3])}</td>
+      <td>${r[4]||'-'}</td>
+      <td class="actions">
+        <button class="btn btn-sm btn-edit" onclick="openEdit('loans_returned',${r[0]})">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteEntry('loans_returned',${r[0]})">🗑️</button>
+      </td>
+    </tr>`;
+  });
+  html += `<tr class="total-row"><td colspan="3"><b>TOTAL</b></td><td class="amount-col returned"><b>Rs. ${fmt(total)}</b></td><td colspan="2"></td></tr>`;
+  html += `</tbody></table>`;
+  el.innerHTML = html;
+}
+
+function emptyState(msg) {
+  return `<div class="empty-state">
+    <svg viewBox="0 0 24 24" fill="var(--text-muted)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+    <p>${msg}</p>
+  </div>`;
+}
+
+// ==================== PERSON CARDS ====================
+function renderPersonCards(filter) {
+  filter = filter || '';
+  const givenRows = queryAll(`SELECT id,date,name,amount,remarks FROM loans_given ORDER BY date ASC`).rows;
+  const returnRows = queryAll(`SELECT id,date,name,amount,remarks FROM loans_returned ORDER BY date ASC`).rows;
+
+  const nameSet = new Set();
+  givenRows.forEach(r => nameSet.add(r[2].trim()));
+  returnRows.forEach(r => nameSet.add(r[2].trim()));
+  const names = [...nameSet].sort();
+
+  if (!names.length) {
+    document.getElementById('personCards').innerHTML = emptyState('Pehle loan add karein. Phir yahan cards nazar aenge.');
+    return;
+  }
+
+  const q = filter.toLowerCase();
+  const filtered = q ? names.filter(n => n.toLowerCase().includes(q)) : names;
+
+  if (!filtered.length) {
+    document.getElementById('personCards').innerHTML = emptyState('Koi nahi mila: "' + filter + '"');
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(name => {
+    const given = givenRows.filter(r => r[2].trim().toLowerCase() === name.toLowerCase());
+    const returned = returnRows.filter(r => r[2].trim().toLowerCase() === name.toLowerCase());
+    const totalGiven = given.reduce((s,r) => s+r[3], 0);
+    const totalReturned = returned.reduce((s,r) => s+r[3], 0);
+    const balance = totalGiven - totalReturned;
+    const balClass = balance > 0 ? 'owe' : 'clear';
+    const balLabel = balance > 0 ? 'Baqi Hai' : 'Clear ✅';
+    const avatar = name.charAt(0).toUpperCase();
+    const safeKey = name.replace(/[^a-zA-Z0-9]/g,'_');
+
+    const allEvents = [
+      ...given.map(r => ({type:'given', id:r[0], date:r[1], amount:r[3], remarks:r[4]})),
+      ...returned.map(r => ({type:'returned', id:r[0], date:r[1], amount:r[3], remarks:r[4]}))
+    ].sort((a,b) => {
+      const parseD = s => { const p=s.split('/'); return (p[2]||'00')+(p[1]||'00')+(p[0]||'00'); };
+      return parseD(a.date).localeCompare(parseD(b.date));
+    });
+
+    let timeline = '';
+    allEvents.forEach(ev => {
+      const typeLabel = ev.type==='given' ? '📤 Diya' : '📥 Wapas';
+      const tbl = ev.type==='given' ? 'loans_given' : 'loans_returned';
+      timeline += '<div class="timeline-item '+ev.type+'">'+
+        '<div class="tl-row">'+
+          '<span class="tl-type '+ev.type+'">'+typeLabel+'</span>'+
+          '<span class="tl-amount '+ev.type+'">Rs. '+fmt(ev.amount)+'</span>'+
+        '</div>'+
+        '<div class="tl-date">📅 '+ev.date+'</div>'+
+        (ev.remarks ? '<div class="tl-remark">💬 '+ev.remarks+'</div>' : '')+
+        '<div class="tl-actions">'+
+          '<button class="btn btn-sm btn-edit" onclick="openEdit(\''+tbl+'\','+ev.id+');event.stopPropagation()">✏️ Edit</button>'+
+          '<button class="btn btn-sm btn-danger" onclick="deletePersonEntry(\''+tbl+'\','+ev.id+');event.stopPropagation()">🗑️</button>'+
+        '</div>'+
+      '</div>';
+    });
+
+    html += '<div class="person-card" id="pc_'+safeKey+'">'+
+      '<div class="person-card-header" onclick="togglePersonCard(\''+safeKey+'\')">'+
+        '<div class="person-avatar">'+avatar+'</div>'+
+        '<div class="person-info">'+
+          '<div class="person-name">'+name+'</div>'+
+          '<div class="person-meta">'+given.length+' loan · '+returned.length+' return</div>'+
+        '</div>'+
+        '<div class="person-balance '+balClass+'">'+
+          '<div class="bal-amount">Rs. '+fmt(Math.abs(balance))+'</div>'+
+          '<div class="bal-label">'+balLabel+'</div>'+
+        '</div>'+
+        '<span class="person-card-chevron"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></span>'+
+      '</div>'+
+      '<div class="person-card-body">'+
+        '<div class="person-summary">'+
+          '<div class="ps-item"><div class="ps-val">Rs. '+fmt(totalGiven)+'</div><div class="ps-lbl">Diya</div></div>'+
+          '<div class="ps-item"><div class="ps-val">Rs. '+fmt(totalReturned)+'</div><div class="ps-lbl">Wapas</div></div>'+
+          '<div class="ps-item" style="border-left:2px solid var(--border);padding-left:12px">'+
+            '<div class="ps-val" style="color:'+(balance>0?'var(--red-dark)':'var(--green-dark)')+'">Rs. '+fmt(Math.abs(balance))+'</div>'+
+            '<div class="ps-lbl">'+(balance>0?'Baqi':'Clear')+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="person-timeline">'+(timeline || '<p style="color:var(--text-muted);font-size:12px;padding:10px 0">Koi transaction nahi</p>')+'</div>'+
+      '</div>'+
+    '</div>';
+  });
+
+  document.getElementById('personCards').innerHTML = html;
+}
+
+function togglePersonCard(safeKey) {
+  const card = document.getElementById('pc_'+safeKey);
+  if (card) card.classList.toggle('open');
+}
+
+function filterPersonCards() {
+  const q = document.getElementById('personSearch') ? document.getElementById('personSearch').value.trim() : '';
+  renderPersonCards(q);
+}
+
+function deletePersonEntry(table, id) {
+  if (!confirm('Yeh entry delete karein?')) return;
+  db.run('DELETE FROM '+table+' WHERE id=?', [id]);
+  saveDB(); refreshDashboard();
+  const q = document.getElementById('personSearch') ? document.getElementById('personSearch').value.trim() : '';
+  renderPersonCards(q);
+  showToast('Deleted!', 'success');
+}
+
+// ==================== EDIT ====================
+function openEdit(table, id) {
+  editContext = { table, id };
+  let row, html, title;
+  if (table === 'amounts') {
+    const res = db.exec(`SELECT date,amount,remarks FROM amounts WHERE id=${id}`);
+    row = res[0].values[0];
+    title = '✏️ Edit Amount Entry';
+    html = `
+      <div class="form-group"><label class="form-label">Date</label>
+        <input class="form-input" id="ef_date" value="${row[0]}" maxlength="8" oninput="formatDate(this)"></div>
+      <div class="form-group"><label class="form-label">Amount</label>
+        <input class="form-input" id="ef_amount" type="number" value="${row[1]}"></div>
+      <div class="form-group"><label class="form-label">Remarks</label>
+        <input class="form-input" id="ef_remarks" value="${row[2]||''}"></div>`;
+  } else {
+    const tbl = table === 'loans_given' ? 'loans_given' : 'loans_returned';
+    const res = db.exec(`SELECT date,name,amount,remarks FROM ${tbl} WHERE id=${id}`);
+    row = res[0].values[0];
+    title = table === 'loans_given' ? '✏️ Edit Loan Given' : '✏️ Edit Loan Return';
+    html = `
+      <div class="form-group"><label class="form-label">Date</label>
+        <input class="form-input" id="ef_date" value="${row[0]}" maxlength="8" oninput="formatDate(this)"></div>
+      <div class="form-group"><label class="form-label">Name</label>
+        <input class="form-input" id="ef_name" value="${row[1]}"></div>
+      <div class="form-group"><label class="form-label">Amount</label>
+        <input class="form-input" id="ef_amount" type="number" value="${row[2]}"></div>
+      <div class="form-group"><label class="form-label">Remarks</label>
+        <input class="form-input" id="ef_remarks" value="${row[3]||''}"></div>`;
+  }
+  document.getElementById('editModalTitle').textContent = title;
+  document.getElementById('editModalBody').innerHTML = html;
+  document.getElementById('editModal').classList.add('open');
+}
+
+function saveEdit() {
+  const { table, id } = editContext;
+  const date = document.getElementById('ef_date').value.trim();
+  const amount = parseFloat(document.getElementById('ef_amount').value);
+  const remarks = document.getElementById('ef_remarks')?.value.trim() || '';
+  if (!validateDate(date)) return showToast('Date must be dd/mm/yy', 'error');
+  if (!amount || amount<=0) return showToast('Enter valid amount', 'error');
+  if (table === 'amounts') {
+    db.run(`UPDATE amounts SET date=?,amount=?,remarks=? WHERE id=?`, [date,amount,remarks,id]);
+  } else {
+    const name = document.getElementById('ef_name').value.trim();
+    if (!name) return showToast('Enter name', 'error');
+    db.run(`UPDATE ${table} SET date=?,name=?,amount=?,remarks=? WHERE id=?`, [date,name,amount,remarks,id]);
+  }
+  saveDB(); closeModal(); refreshDashboard();
+  if (table==='amounts') renderAmountTable();
+  if (table==='loans_given') renderGivenTable();
+  if (table==='loans_returned') renderReturnTable();
+  if (currentPage==='Person') renderPersonCards();
+  showToast('✅ Updated!', 'success');
+}
+
+function deleteEntry(table, id) {
+  if (!confirm('Delete this entry?')) return;
+  db.run(`DELETE FROM ${table} WHERE id=?`, [id]);
+  saveDB(); refreshDashboard();
+  if (table==='amounts') renderAmountTable();
+  if (table==='loans_given') renderGivenTable();
+  if (table==='loans_returned') renderReturnTable();
+  if (currentPage==='Person') renderPersonCards();
+  showToast('🗑️ Deleted!', 'success');
+}
+
+function closeModal() {
+  document.getElementById('editModal').classList.remove('open');
+}
+
+// ==================== IMPORT / EXPORT ====================
+function openImportExport() {
+  document.getElementById('importStatus').textContent = '';
+  document.getElementById('jsonFileInput').value = '';
+  switchIeTab('export');
+  document.getElementById('ieModal').classList.add('open');
+}
+function closeIeModal() {
+  document.getElementById('ieModal').classList.remove('open');
+}
+function switchIeTab(tab) {
+  document.querySelectorAll('.ie-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='export')||(i===1&&tab==='import')));
+  document.getElementById('ieExportPanel').classList.toggle('active', tab==='export');
+  document.getElementById('ieImportPanel').classList.toggle('active', tab==='import');
+}
+
+function exportJSON() {
+  const amounts = queryAll(`SELECT id,date,amount,remarks FROM amounts ORDER BY id`).rows;
+  const given = queryAll(`SELECT id,date,name,amount,remarks FROM loans_given ORDER BY id`).rows;
+  const returned = queryAll(`SELECT id,date,name,amount,remarks FROM loans_returned ORDER BY id`).rows;
+  const payload = {
+    version: 1,
+    exported_at: new Date().toISOString(),
+    amounts: amounts.map(r => ({id:r[0],date:r[1],amount:r[2],remarks:r[3]})),
+    loans_given: given.map(r => ({id:r[0],date:r[1],name:r[2],amount:r[3],remarks:r[4]})),
+    loans_returned: returned.map(r => ({id:r[0],date:r[1],name:r[2],amount:r[3],remarks:r[4]}))
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `LoanManager_Backup_${todayDate().replace(/\//g,'-')}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ JSON Backup Downloaded!', 'success');
+}
+
+function exportCSV(table) {
+  let rows, headers, filename;
+  if (table === 'amounts') {
+    rows = queryAll(`SELECT date,amount,remarks FROM amounts ORDER BY id`).rows;
+    headers = ['Date','Amount (Rs.)','Remarks'];
+    filename = 'Amount_Report';
+  } else if (table === 'loans_given') {
+    rows = queryAll(`SELECT date,name,amount,remarks FROM loans_given ORDER BY id`).rows;
+    headers = ['Date','Name','Amount (Rs.)','Remarks'];
+    filename = 'Loan_Given_Report';
+  } else {
+    rows = queryAll(`SELECT date,name,amount,remarks FROM loans_returned ORDER BY id`).rows;
+    headers = ['Date','Name','Amount (Rs.)','Remarks'];
+    filename = 'Loan_Return_Report';
+  }
+  if (!rows.length) return showToast('Koi data nahi!', 'error');
+  const csvRows = [headers.join(',')];
+  rows.forEach(r => {
+    csvRows.push(r.map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
+  });
+  // Total row
+  const amtIdx = table==='amounts' ? 1 : 2;
+  const total = rows.reduce((s,r) => s+(parseFloat(r[amtIdx])||0), 0);
+  const totArr = new Array(headers.length).fill('""');
+  totArr[0] = '"TOTAL"';
+  totArr[amtIdx] = `"${total}"`;
+  csvRows.push(totArr.join(','));
+
+  const blob = new Blob(['\uFEFF'+csvRows.join('\n')], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${filename}_${todayDate().replace(/\//g,'-')}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ CSV Downloaded!', 'success');
+}
+
+function importJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('importStatus');
+  statusEl.style.color = 'var(--text-muted)';
+  statusEl.textContent = '⏳ File parh rahe hain...';
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.version || !data.amounts || !data.loans_given || !data.loans_returned) {
+        throw new Error('Invalid format');
+      }
+      if (!confirm(`Yeh backup import karein?\n\n📥 Amounts: ${data.amounts.length}\n📤 Loans Given: ${data.loans_given.length}\n🔄 Returns: ${data.loans_returned.length}\n\n⚠️ Purana data DELETE ho jaega!`)) {
+        statusEl.textContent = '❌ Import cancel ho gaya.';
+        return;
+      }
+      // Clear all tables
+      db.run(`DELETE FROM amounts`);
+      db.run(`DELETE FROM loans_given`);
+      db.run(`DELETE FROM loans_returned`);
+      // Reset auto-increment sequences
+      db.run(`DELETE FROM sqlite_sequence WHERE name IN ('amounts','loans_given','loans_returned')`);
+      // Insert imported data
+      data.amounts.forEach(r => {
+        db.run(`INSERT INTO amounts (date,amount,remarks) VALUES (?,?,?)`, [r.date, r.amount, r.remarks||'']);
+      });
+      data.loans_given.forEach(r => {
+        db.run(`INSERT INTO loans_given (date,name,amount,remarks) VALUES (?,?,?,?)`, [r.date, r.name, r.amount, r.remarks||'']);
+      });
+      data.loans_returned.forEach(r => {
+        db.run(`INSERT INTO loans_returned (date,name,amount,remarks) VALUES (?,?,?,?)`, [r.date, r.name, r.amount, r.remarks||'']);
+      });
+      saveDB();
+      refreshDashboard();
+      statusEl.style.color = 'var(--green-dark)';
+      statusEl.textContent = `✅ Import complete! ${data.amounts.length} amounts, ${data.loans_given.length} loans, ${data.loans_returned.length} returns.`;
+      showToast('✅ Data Import ho gaya!', 'success');
+      setTimeout(() => closeIeModal(), 1800);
+    } catch(err) {
+      statusEl.style.color = 'var(--red-dark)';
+      statusEl.textContent = '❌ File galat hai ya corrupt! Sirf JSON backup file use karein.';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ==================== DOWNLOAD ====================
+async function downloadReport(elementId, filename) {
+  showToast('📸 Preparing image...', 'success');
+  const el = document.getElementById(elementId);
+  const canvas = await html2canvas(el, {
+    backgroundColor: '#ffffff', scale: 2, useCORS: true,
+    logging: false
+  });
+  const link = document.createElement('a');
+  link.download = `${filename}_${new Date().toLocaleDateString('en-GB').replace(/\//g,'-')}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('✅ Downloaded!', 'success');
+}
+
+// ==================== TOAST ====================
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ==================== INIT ====================
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('passwordScreen').style.display !== 'none') {
+    pinEnter();
+  }
+});
+
+initDB().then(() => {
+  console.log('DB ready');
+  // Set today's date in all date inputs
+  const today = todayDate();
+  ['addDate','givenDate','returnDate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = today;
+  });
+});
+
+// PWA SERVICE WORKER
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
