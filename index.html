@@ -811,6 +811,66 @@ input[type="date"].hidden-date {
   </div>
 </div>
 
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-title">⚙️ Settings</div>
+    <div class="drive-card">
+      <div class="drive-header">
+        <div class="drive-icon">
+          <svg viewBox="0 0 24 24"><path d="M7.71 3.5L1.15 15l3.43 6 6.56-11.5zm8.13 0H8.58l6.56 11.5H22.85zM12 13.5L8.58 19.5h6.84z"/></svg>
+        </div>
+        <div>
+          <div class="drive-title">Google Drive Sync</div>
+          <div class="drive-subtitle">Auto backup to Google Drive</div>
+        </div>
+      </div>
+      <div class="drive-status disconnected" id="driveStatus">
+        <div class="drive-dot"></div>
+        <span id="driveStatusText">Not Connected</span>
+      </div>
+      <div id="driveSetupSection">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Google Cloud Console se OAuth Client ID paste karein:</p>
+        <input class="client-id-input" type="text" id="clientIdInput" placeholder="xxxxxxxxxx.apps.googleusercontent.com">
+        <div class="drive-btn-row">
+          <button class="drive-btn connect" onclick="connectDrive()">🔗 Connect Google Drive</button>
+          <button class="drive-btn sync" onclick="connectDrive()" id="reconnectBtn" style="display:none;background:var(--gold-dark);color:var(--text)">🔄 Reconnect</button>
+        </div>
+      </div>
+      <div id="driveConnectedSection" style="display:none">
+        <p style="font-size:12px;color:var(--green-dark);margin-bottom:10px">✅ Connected: <span id="driveEmail"></span></p>
+        <div class="drive-btn-row">
+          <button class="drive-btn sync" onclick="manualSync()">☁️ Sync Now</button>
+          <button class="drive-btn disconnect" onclick="disconnectDrive()">🔌 Disconnect</button>
+        </div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:8px" id="lastSyncTime"></p>
+      </div>
+    </div>
+    <div class="section-card" style="margin-bottom:14px">
+      <div class="section-title" style="font-size:14px;margin-bottom:12px">🔑 Security Question (PIN Recovery)</div>
+      <div class="form-group">
+        <label class="form-label">Sawal Chunein</label>
+        <select class="form-input" id="setSecQuestion" style="padding:10px 12px">
+          <option value="">-- Sawal chunein --</option>
+          <option value="q1">Aapki ammi ka naam kya hai?</option>
+          <option value="q2">Aap ka pehla school kaunsa tha?</option>
+          <option value="q3">Aapka pehla mobile kaunsa tha?</option>
+          <option value="q4">Aapka favourite colour kya hai?</option>
+          <option value="q5">Aap ka janm shahir kaunsa hai?</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Jawab (yaad rakhen)</label>
+        <input class="form-input" type="text" id="setSecAnswer" placeholder="Jawab likhein...">
+      </div>
+      <button class="btn btn-primary" onclick="saveSecurityQuestion()" style="padding:10px">💾 Save Karein</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeSettings()">بند کریں</button>
+    </div>
+  </div>
+</div>
+
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
@@ -1477,6 +1537,18 @@ document.addEventListener('keydown', e => {
   }
 });
 
+function openSettings() {
+  const savedClientId = localStorage.getItem('driveClientId') || '';
+  document.getElementById('clientIdInput').value = savedClientId;
+  const sq = localStorage.getItem('secQuestion') || '';
+  document.getElementById('setSecQuestion').value = sq;
+  updateDriveStatusUI();
+  document.getElementById('settingsModal').classList.add('open');
+}
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('open');
+}
+
 initDB().then(() => {
   console.log('DB ready');
   // Set today's date in all date inputs
@@ -1493,73 +1565,8 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
-<!-- SETTINGS MODAL -->
-<div class="modal-overlay" id="settingsModal">
-  <div class="modal-box" style="max-width:480px">
-    <div class="modal-title">⚙️ Settings</div>
-
-    <!-- Google Drive Section -->
-    <div class="drive-card">
-      <div class="drive-header">
-        <div class="drive-icon">
-          <svg viewBox="0 0 24 24"><path d="M7.71 3.5L1.15 15l3.43 6 6.56-11.5zm8.13 0H8.58l6.56 11.5H22.85zM12 13.5L8.58 19.5h6.84z"/></svg>
-        </div>
-        <div>
-          <div class="drive-title">Google Drive Sync</div>
-          <div class="drive-subtitle">Auto backup to Google Drive</div>
-        </div>
-      </div>
-      <div class="drive-status disconnected" id="driveStatus">
-        <div class="drive-dot"></div>
-        <span id="driveStatusText">Not Connected</span>
-      </div>
-      <div id="driveSetupSection">
-        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Google Cloud Console se OAuth Client ID paste karein:</p>
-        <input class="client-id-input" type="text" id="clientIdInput" placeholder="xxxxxxxxxx.apps.googleusercontent.com">
-        <div class="drive-btn-row">
-          <button class="drive-btn connect" onclick="connectDrive()">🔗 Connect Google Drive</button>
-          <button class="drive-btn sync" onclick="connectDrive()" id="reconnectBtn" style="display:none;background:var(--gold-dark);color:var(--text)">🔄 Reconnect</button>
-        </div>
-      </div>
-      <div id="driveConnectedSection" style="display:none">
-        <p style="font-size:12px;color:var(--green-dark);margin-bottom:10px">✅ Connected: <span id="driveEmail"></span></p>
-        <div class="drive-btn-row">
-          <button class="drive-btn sync" onclick="manualSync()">☁️ Sync Now</button>
-          <button class="drive-btn disconnect" onclick="disconnectDrive()">🔌 Disconnect</button>
-        </div>
-        <p style="font-size:11px;color:var(--text-muted);margin-top:8px" id="lastSyncTime"></p>
-      </div>
-    </div>
-
-    <!-- Security Question -->
-    <div class="section-card" style="margin-bottom:14px">
-      <div class="section-title" style="font-size:14px;margin-bottom:12px">🔑 Security Question (PIN Recovery)</div>
-      <div class="form-group">
-        <label class="form-label">Sawal Chunein</label>
-        <select class="form-input" id="setSecQuestion" style="padding:10px 12px">
-          <option value="">-- Sawal chunein --</option>
-          <option value="q1">Aapki ammi ka naam kya hai?</option>
-          <option value="q2">Aap ka pehla school kaunsa tha?</option>
-          <option value="q3">Aapka pehla mobile kaunsa tha?</option>
-          <option value="q4">Aapka favourite colour kya hai?</option>
-          <option value="q5">Aap ka janm shahir kaunsa hai?</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Jawab (yaad rakhen)</label>
-        <input class="form-input" type="text" id="setSecAnswer" placeholder="Jawab likhein...">
-      </div>
-      <button class="btn btn-primary" onclick="saveSecurityQuestion()" style="padding:10px">💾 Save Karein</button>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeSettings()">بند کریں</button>
-    </div>
-  </div>
-</div>
-<script>
-function openSettings() {
-  const savedClientId = localStorage.getItem('driveClientId') || '';
+// openSettings already defined above
+//   const savedClientId = localStorage.getItem('driveClientId') || '';
   document.getElementById('clientIdInput').value = savedClientId;
   const sq = localStorage.getItem('secQuestion') || '';
   const sa = localStorage.getItem('secAnswer') || '';
