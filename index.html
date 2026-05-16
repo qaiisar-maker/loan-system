@@ -114,40 +114,6 @@ body {
 .pin-btn.enter:hover { background: var(--blue-dark); }
 .pin-error { color: var(--red); font-size: 12px; margin-top: 12px; min-height: 18px; }
 .change-pin-link { color: var(--blue); font-size: 12px; cursor: pointer; margin-top: 14px; display: inline-block; text-decoration: underline; }
-.forgot-pin-link { color: var(--text-muted); font-size: 12px; cursor: pointer; margin-top: 6px; display: inline-block; text-decoration: underline; }
-.recovery-form { display: none; margin-top: 14px; text-align: left; }
-.recovery-form.open { display: block; }
-.recovery-form select { width: 100%; padding: 10px 12px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: 'Poppins', sans-serif; color: var(--text); background: var(--bg); margin-bottom: 8px; outline: none; }
-
-/* GOOGLE DRIVE STYLES */
-.drive-card {
-  background: linear-gradient(135deg, rgba(46,107,230,0.06), rgba(245,196,0,0.06));
-  border: 2px solid var(--border); border-radius: var(--radius);
-  padding: 18px; margin-bottom: 16px;
-}
-.drive-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.drive-icon { width: 38px; height: 38px; background: linear-gradient(135deg, #4285F4, #34A853); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-.drive-icon svg { width: 22px; height: 22px; fill: white; }
-.drive-title { font-weight: 700; font-size: 14px; }
-.drive-subtitle { font-size: 11px; color: var(--text-muted); }
-.drive-status { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; font-weight: 600; }
-.drive-status.connected { background: rgba(46,204,113,0.12); color: var(--green-dark); }
-.drive-status.disconnected { background: rgba(107,122,153,0.1); color: var(--text-muted); }
-.drive-status.syncing { background: rgba(46,107,230,0.1); color: var(--blue); }
-.drive-status.error { background: rgba(231,76,60,0.1); color: var(--red-dark); }
-.drive-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.drive-status.connected .drive-dot { background: var(--green); }
-.drive-status.disconnected .drive-dot { background: var(--text-muted); }
-.drive-status.syncing .drive-dot { background: var(--blue); animation: pulse 1s infinite; }
-.drive-status.error .drive-dot { background: var(--red); }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-.drive-btn { padding: 9px 16px; border-radius: 8px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 0.2s; }
-.drive-btn.connect { background: linear-gradient(135deg, #4285F4, #34A853); color: white; }
-.drive-btn.disconnect { background: rgba(231,76,60,0.1); color: var(--red-dark); }
-.drive-btn.sync { background: var(--blue); color: white; }
-.drive-btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.client-id-input { width: 100%; padding: 10px 12px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-family: 'Poppins', sans-serif; color: var(--text); background: var(--bg); margin-bottom: 8px; outline: none; }
-.client-id-input:focus { border-color: var(--blue); }
 
 /* ========== APP LAYOUT ========== */
 #app { display: none; min-height: 100vh; flex-direction: column; }
@@ -168,25 +134,15 @@ body {
   border-radius: 10px; display: flex; align-items: center; justify-content: center;
 }
 .nav-logo svg { width: 22px; height: 22px; fill: white; }
-.nav-title { font-weight: 700; font-size: 16px; letter-spacing: 0.3px; white-space: nowrap; }
-.nav-subtitle { font-size: 10px; opacity: 0.7; font-weight: 400; white-space: nowrap; }
-.nav-right { display: flex; gap: 6px; align-items: center; }
+.nav-title { font-weight: 700; font-size: 18px; letter-spacing: 0.3px; }
+.nav-subtitle { font-size: 10px; opacity: 0.7; font-weight: 400; }
+.nav-right { display: flex; gap: 10px; align-items: center; }
 .nav-btn {
   background: rgba(255,255,255,0.12); border: none; color: white;
-  padding: 7px 10px; border-radius: 8px; cursor: pointer; font-size: 11px;
+  padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 12px;
   font-family: 'Poppins', sans-serif; transition: all 0.2s; font-weight: 500;
-  white-space: nowrap;
 }
 .nav-btn:hover { background: rgba(255,255,255,0.22); }
-@media (max-width: 400px) {
-  .nav-title { font-size: 13px; }
-  .nav-subtitle { display: none; }
-  .nav-logo { width: 30px; height: 30px; }
-  .nav-logo svg { width: 17px; height: 17px; }
-  .nav-btn { padding: 6px 8px; font-size: 10px; }
-  .nav-brand { gap: 6px; }
-  .top-nav { padding: 0 10px; height: 56px; }
-}
 
 /* BOTTOM NAV */
 .bottom-nav {
@@ -567,27 +523,10 @@ input[type="date"].hidden-date {
     </div>
     <div class="pin-error" id="pinError"></div>
     <span class="change-pin-link" onclick="toggleChangePinForm()">Change PIN</span>
-    <span class="forgot-pin-link" onclick="toggleRecoveryForm()">🔑 PIN bhool gaye?</span>
     <div class="change-pin-form" id="changePinForm">
       <input class="form-input" type="password" id="newPin" placeholder="New 4-digit PIN" maxlength="4" style="margin-bottom:8px">
       <input class="form-input" type="password" id="confirmPin" placeholder="Confirm PIN" maxlength="4" style="margin-bottom:8px">
       <button class="btn btn-primary" onclick="saveNewPin()">Save New PIN</button>
-    </div>
-    <div class="recovery-form" id="recoveryForm">
-      <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Security Question se PIN reset karein:</p>
-      <select id="recoveryQuestion">
-        <option value="">-- Sawal chunein --</option>
-        <option value="q1">Aapki ammi ka naam kya hai?</option>
-        <option value="q2">Aap ka pehla school kaunsa tha?</option>
-        <option value="q3">Aapka pehla mobile kaunsa tha?</option>
-        <option value="q4">Aapka favourite colour kya hai?</option>
-        <option value="q5">Aap ka janm shahir kaunsa hai?</option>
-      </select>
-      <input class="form-input" type="text" id="recoveryAnswer" placeholder="Jawab likhein..." style="margin-bottom:8px">
-      <input class="form-input" type="password" id="recoveryNewPin" placeholder="Naya 4-digit PIN" maxlength="4" style="margin-bottom:8px">
-      <button class="btn btn-gold" onclick="verifyRecovery()" style="margin-bottom:6px">✅ PIN Reset Karein</button>
-      <p id="recoveryError" style="color:var(--red-dark);font-size:12px;min-height:16px"></p>
-      <p style="font-size:11px;color:var(--text-muted);margin-top:6px">⚠️ Pehle Settings mein security question set karein</p>
     </div>
   </div>
 </div>
@@ -595,7 +534,8 @@ input[type="date"].hidden-date {
 <!-- MAIN APP -->
 <div id="app">
   <!-- Top Nav -->
-  <nav class="top-nav">
+  <div style="background:linear-gradient(135deg,#1565c0,#283593);color:#fff;padding:5px 14px;font-size:11px;font-weight:600;text-align:center">🛡️ v3 — IndexedDB Safe Storage (Browser history delete se data mehfooz!)</div>
+<nav class="top-nav">
     <div class="nav-brand">
       <div class="nav-logo">
         <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
@@ -606,7 +546,6 @@ input[type="date"].hidden-date {
       </div>
     </div>
     <div class="nav-right">
-      <button class="nav-btn" onclick="openSettings()">⚙️</button>
       <button class="nav-btn" onclick="openImportExport()">📦 Backup</button>
       <button class="nav-btn" onclick="lockApp()">🔒 Lock</button>
     </div>
@@ -871,71 +810,6 @@ input[type="date"].hidden-date {
   </div>
 </div>
 
-<!-- SETTINGS MODAL -->
-<div class="modal-overlay" id="settingsModal">
-  <div class="modal-box" style="max-width:480px">
-    <div class="modal-title">⚙️ Settings</div>
-
-    <!-- Google Drive Section -->
-    <div class="drive-card">
-      <div class="drive-header">
-        <div class="drive-icon">
-          <svg viewBox="0 0 24 24"><path d="M7.71 3.5L1.15 15l3.43 6 6.56-11.5zm8.13 0H8.58l6.56 11.5H22.85zM12 13.5L8.58 19.5h6.84z"/></svg>
-        </div>
-        <div>
-          <div class="drive-title">Google Drive Sync</div>
-          <div class="drive-subtitle">Auto backup to Google Drive</div>
-        </div>
-      </div>
-      <div class="drive-status disconnected" id="driveStatus">
-        <div class="drive-dot"></div>
-        <span id="driveStatusText">Not Connected</span>
-      </div>
-      <div id="driveSetupSection">
-        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Google Cloud Console se OAuth Client ID paste karein:</p>
-        <input class="client-id-input" type="text" id="clientIdInput" placeholder="xxxxxxxxxx.apps.googleusercontent.com">
-        <div class="drive-btn-row">
-          <button class="drive-btn connect" onclick="connectDrive()">🔗 Connect Google Drive</button>
-          <button class="drive-btn sync" onclick="connectDrive()" id="reconnectBtn" style="display:none;background:var(--gold-dark);color:var(--text)">🔄 Reconnect</button>
-        </div>
-      </div>
-      <div id="driveConnectedSection" style="display:none">
-        <p style="font-size:12px;color:var(--green-dark);margin-bottom:10px">✅ Connected: <span id="driveEmail"></span></p>
-        <div class="drive-btn-row">
-          <button class="drive-btn sync" onclick="manualSync()">☁️ Sync Now</button>
-          <button class="drive-btn disconnect" onclick="disconnectDrive()">🔌 Disconnect</button>
-        </div>
-        <p style="font-size:11px;color:var(--text-muted);margin-top:8px" id="lastSyncTime"></p>
-      </div>
-    </div>
-
-    <!-- Security Question Section -->
-    <div class="section-card" style="margin-bottom:14px">
-      <div class="section-title" style="font-size:14px;margin-bottom:12px">🔑 Security Question (PIN Recovery)</div>
-      <div class="form-group">
-        <label class="form-label">Sawal Chunein</label>
-        <select class="form-input" id="setSecQuestion" style="padding:10px 12px">
-          <option value="">-- Sawal chunein --</option>
-          <option value="q1">Aapki ammi ka naam kya hai?</option>
-          <option value="q2">Aap ka pehla school kaunsa tha?</option>
-          <option value="q3">Aapka pehla mobile kaunsa tha?</option>
-          <option value="q4">Aapka favourite colour kya hai?</option>
-          <option value="q5">Aap ka janm shahir kaunsa hai?</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Jawab (yaad rakhen)</label>
-        <input class="form-input" type="text" id="setSecAnswer" placeholder="Jawab likhein...">
-      </div>
-      <button class="btn btn-primary" onclick="saveSecurityQuestion()" style="padding:10px">💾 Security Question Save Karein</button>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeSettings()">بند کریں</button>
-    </div>
-  </div>
-</div>
-
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
@@ -960,8 +834,25 @@ const DEFAULT_PIN = '1234';
 
 // ==================== DB INIT ====================
 async function initDB() {
+  // Open IndexedDB first
+  try { await openLoanIDB(); } catch(e) { console.warn('IDB open failed', e); }
+
   const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}` });
-  const saved = localStorage.getItem('loanDB');
+
+  // Try IndexedDB first, then localStorage fallback
+  let saved = null;
+  try { saved = await idbGetLoan('loanDB'); } catch(e) {}
+  if (!saved) {
+    // Migrate from localStorage if exists
+    try {
+      const ls = localStorage.getItem('loanDB');
+      if (ls) {
+        saved = ls;
+        console.log('Migrating from localStorage to IndexedDB...');
+      }
+    } catch(e) {}
+  }
+
   if (saved) {
     const arr = Uint8Array.from(atob(saved), c => c.charCodeAt(0));
     db = new SQL.Database(arr);
@@ -977,7 +868,10 @@ async function initDB() {
 function saveDB() {
   const data = db.export();
   const b64 = btoa(String.fromCharCode(...data));
-  localStorage.setItem('loanDB', b64);
+  // Save to IndexedDB (browser history safe!)
+  idbSaveLoan('loanDB', b64);
+  // Fallback localStorage
+  try { localStorage.setItem('loanDB', b64); } catch(e) {}
   scheduledSync();
 }
 
@@ -1567,306 +1461,7 @@ async function downloadReport(elementId, filename) {
   showToast('✅ Downloaded!', 'success');
 }
 
-// ==================== SETTINGS ====================
-function openSettings() {
-  // Load saved client ID
-  const savedClientId = localStorage.getItem('driveClientId') || '';
-  document.getElementById('clientIdInput').value = savedClientId;
-  // Load security question
-  const sq = localStorage.getItem('secQuestion') || '';
-  const sa = localStorage.getItem('secAnswer') || '';
-  document.getElementById('setSecQuestion').value = sq;
-  document.getElementById('setSecAnswer').value = sa;
-  // Update drive status UI
-  updateDriveStatusUI();
-  document.getElementById('settingsModal').classList.add('open');
-}
-function closeSettings() {
-  document.getElementById('settingsModal').classList.remove('open');
-}
-
-// ==================== SECURITY QUESTION ====================
-function saveSecurityQuestion() {
-  const q = document.getElementById('setSecQuestion').value;
-  const a = document.getElementById('setSecAnswer').value.trim().toLowerCase();
-  if (!q) return showToast('Pehle sawal chunein!', 'error');
-  if (!a) return showToast('Jawab likhein!', 'error');
-  localStorage.setItem('secQuestion', q);
-  localStorage.setItem('secAnswer', a);
-  showToast('✅ Security question save ho gaya!', 'success');
-}
-
-function toggleRecoveryForm() {
-  document.getElementById('recoveryForm').classList.toggle('open');
-}
-
-function verifyRecovery() {
-  const q = document.getElementById('recoveryQuestion').value;
-  const a = document.getElementById('recoveryAnswer').value.trim().toLowerCase();
-  const newPin = document.getElementById('recoveryNewPin').value.trim();
-  const errEl = document.getElementById('recoveryError');
-
-  const savedQ = localStorage.getItem('secQuestion');
-  const savedA = localStorage.getItem('secAnswer');
-
-  if (!savedQ) { errEl.textContent = '❌ Pehle Settings mein security question set karein!'; return; }
-  if (!q) { errEl.textContent = '❌ Sawal chunein!'; return; }
-  if (q !== savedQ) { errEl.textContent = '❌ Yeh sawal galat hai!'; return; }
-  if (a !== savedA) { errEl.textContent = '❌ Jawab galat hai!'; return; }
-  if (!/^\d{4}$/.test(newPin)) { errEl.textContent = '❌ 4-digit PIN chahiye!'; return; }
-
-  localStorage.setItem('appPIN', newPin);
-  errEl.style.color = 'var(--green-dark)';
-  errEl.textContent = '✅ PIN reset ho gaya! Ab login karein.';
-  document.getElementById('recoveryAnswer').value = '';
-  document.getElementById('recoveryNewPin').value = '';
-  setTimeout(() => {
-    document.getElementById('recoveryForm').classList.remove('open');
-    errEl.textContent = '';
-    errEl.style.color = 'var(--red-dark)';
-  }, 2000);
-}
-
-// ==================== GOOGLE DRIVE ====================
-let driveAccessToken = null;
-let driveFileId = null;
-let driveTokenExpiry = null;
-let syncTimeout = null;
-
-function updateDriveStatusUI() {
-  const token = localStorage.getItem('driveToken');
-  const email = localStorage.getItem('driveEmail');
-  const expiry = localStorage.getItem('driveTokenExpiry');
-  const statusEl = document.getElementById('driveStatus');
-  const statusText = document.getElementById('driveStatusText');
-  const setupSection = document.getElementById('driveSetupSection');
-  const connectedSection = document.getElementById('driveConnectedSection');
-
-  if (token && email && expiry && Date.now() < parseInt(expiry)) {
-    driveAccessToken = token;
-    driveTokenExpiry = parseInt(expiry);
-    statusEl.className = 'drive-status connected';
-    statusText.textContent = 'Connected';
-    document.getElementById('driveEmail').textContent = email;
-    setupSection.style.display = 'none';
-    connectedSection.style.display = 'block';
-    const lastSync = localStorage.getItem('lastSyncTime');
-    if (lastSync) document.getElementById('lastSyncTime').textContent = 'Last sync: ' + lastSync;
-  } else if (token && email) {
-    // Token expired — try silent refresh
-    driveAccessToken = null;
-    statusEl.className = 'drive-status error';
-    statusText.textContent = 'Token Expired — Reconnect karein';
-    setupSection.style.display = 'block';
-    connectedSection.style.display = 'none';
-    // Show saved client id and reconnect button
-    const clientId = localStorage.getItem('driveClientId');
-    if (clientId) document.getElementById('clientIdInput').value = clientId;
-    const reconnectBtn = document.getElementById('reconnectBtn');
-    if (reconnectBtn) { reconnectBtn.style.display = 'inline-block'; }
-    document.querySelector('#driveSetupSection p').textContent = 'Token expire ho gaya — dobara connect karein:';
-  } else {
-    driveAccessToken = null;
-    statusEl.className = 'drive-status disconnected';
-    statusText.textContent = 'Not Connected';
-    setupSection.style.display = 'block';
-    connectedSection.style.display = 'none';
-    const clientId = localStorage.getItem('driveClientId');
-    if (clientId) document.getElementById('clientIdInput').value = clientId;
-  }
-}
-
-function reconnectDrive() {
-  // One-click reconnect using saved client ID
-  const clientId = localStorage.getItem('driveClientId');
-  if (!clientId) { showToast('Client ID nahi mila!', 'error'); return; }
-  const redirectUri = window.location.origin + window.location.pathname;
-  const scope = 'https://www.googleapis.com/auth/drive.file';
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&prompt=none`;
-  localStorage.setItem('driveConnecting', '1');
-  // Try silent first in iframe, fallback to redirect
-  silentTokenRefresh(clientId, redirectUri, scope);
-}
-
-function connectDrive() {
-  const clientId = document.getElementById('clientIdInput').value.trim();
-  if (!clientId || !clientId.includes('.apps.googleusercontent.com')) {
-    return showToast('Valid Client ID paste karein!', 'error');
-  }
-  localStorage.setItem('driveClientId', clientId);
-
-  const redirectUri = window.location.origin + window.location.pathname;
-  const scope = 'https://www.googleapis.com/auth/drive.file';
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&prompt=consent`;
-
-  localStorage.setItem('driveConnecting', '1');
-  window.location.href = authUrl;
-}
-
-function handleOAuthCallback() {
-  const hash = window.location.hash;
-  if (!hash || !hash.includes('access_token')) return;
-
-  const params = new URLSearchParams(hash.substring(1));
-  const token = params.get('access_token');
-  const expiresIn = parseInt(params.get('expires_in') || '3600');
-
-  if (!token) return;
-
-  driveAccessToken = token;
-  driveTokenExpiry = Date.now() + (expiresIn * 1000);
-
-  localStorage.setItem('driveToken', token);
-  localStorage.setItem('driveTokenExpiry', driveTokenExpiry.toString());
-  localStorage.removeItem('driveConnecting');
-
-  // Clean URL
-  window.history.replaceState({}, document.title, window.location.pathname);
-
-  // Get user email
-  fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-    headers: { 'Authorization': 'Bearer ' + token }
-  }).then(r => r.json()).then(info => {
-    const email = info.email || 'Connected';
-    localStorage.setItem('driveEmail', email);
-    showToast('✅ Google Drive connected: ' + email, 'success');
-    updateDriveStatusUI();
-    // Auto sync after connect
-    setTimeout(() => autoSync(), 1500);
-  }).catch(() => {
-    localStorage.setItem('driveEmail', 'Connected');
-    updateDriveStatusUI();
-  });
-}
-
-function disconnectDrive() {
-  if (!confirm('Google Drive disconnect karein?')) return;
-  driveAccessToken = null;
-  driveTokenExpiry = null;
-  driveFileId = null;
-  localStorage.removeItem('driveToken');
-  localStorage.removeItem('driveTokenExpiry');
-  localStorage.removeItem('driveEmail');
-  localStorage.removeItem('driveFileId');
-  updateDriveStatusUI();
-  showToast('🔌 Drive disconnected', 'success');
-}
-
-async function findOrCreateDriveFile() {
-  if (!driveAccessToken) return null;
-
-  // Check if token expired
-  if (Date.now() >= driveTokenExpiry - 30000) {
-    showToast('⚠️ Drive token expire — Settings mein reconnect karein', 'error');
-    localStorage.removeItem('driveToken');
-    updateDriveStatusUI();
-    return null;
-  }
-
-  const savedFileId = localStorage.getItem('driveFileId');
-  if (savedFileId) {
-    driveFileId = savedFileId;
-    return driveFileId;
-  }
-
-  // Search for existing file
-  try {
-    const searchRes = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=name%3D'LoanManager_Backup.json'+and+trashed%3Dfalse&spaces=drive&fields=files(id,name)`,
-      { headers: { 'Authorization': 'Bearer ' + driveAccessToken } }
-    );
-    const searchData = await searchRes.json();
-    if (searchData.files && searchData.files.length > 0) {
-      driveFileId = searchData.files[0].id;
-      localStorage.setItem('driveFileId', driveFileId);
-      return driveFileId;
-    }
-  } catch(e) {}
-
-  // Create new file
-  try {
-    const meta = { name: 'LoanManager_Backup.json', mimeType: 'application/json' };
-    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + driveAccessToken, 'Content-Type': 'application/json' },
-      body: JSON.stringify(meta)
-    });
-    const createData = await createRes.json();
-    driveFileId = createData.id;
-    localStorage.setItem('driveFileId', driveFileId);
-    return driveFileId;
-  } catch(e) {
-    return null;
-  }
-}
-
-async function autoSync() {
-  if (!driveAccessToken) return;
-  if (Date.now() >= driveTokenExpiry - 30000) {
-    localStorage.removeItem('driveToken');
-    updateDriveStatusUI();
-    return;
-  }
-
-  // Update status
-  const statusEl = document.getElementById('driveStatus');
-  if (statusEl) {
-    statusEl.className = 'drive-status syncing';
-    document.getElementById('driveStatusText').textContent = 'Syncing...';
-  }
-
-  const fileId = await findOrCreateDriveFile();
-  if (!fileId) return;
-
-  // Prepare backup data
-  const amounts = queryAll(`SELECT id,date,amount,remarks FROM amounts ORDER BY id`).rows;
-  const given = queryAll(`SELECT id,date,name,amount,remarks FROM loans_given ORDER BY id`).rows;
-  const returned = queryAll(`SELECT id,date,name,amount,remarks FROM loans_returned ORDER BY id`).rows;
-  const payload = {
-    version: 1,
-    exported_at: new Date().toISOString(),
-    amounts: amounts.map(r => ({id:r[0],date:r[1],amount:r[2],remarks:r[3]})),
-    loans_given: given.map(r => ({id:r[0],date:r[1],name:r[2],amount:r[3],remarks:r[4]})),
-    loans_returned: returned.map(r => ({id:r[0],date:r[1],name:r[2],amount:r[3],remarks:r[4]}))
-  };
-
-  try {
-    await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': 'Bearer ' + driveAccessToken,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload, null, 2)
-    });
-
-    const now = new Date().toLocaleString('en-PK');
-    localStorage.setItem('lastSyncTime', now);
-    if (statusEl) {
-      statusEl.className = 'drive-status connected';
-      document.getElementById('driveStatusText').textContent = 'Connected';
-      const lastEl = document.getElementById('lastSyncTime');
-      if (lastEl) lastEl.textContent = 'Last sync: ' + now;
-    }
-  } catch(e) {
-    if (statusEl) {
-      statusEl.className = 'drive-status error';
-      document.getElementById('driveStatusText').textContent = 'Sync Failed';
-    }
-  }
-}
-
-function scheduledSync() {
-  clearTimeout(syncTimeout);
-  syncTimeout = setTimeout(() => { autoSync(); }, 2500);
-}
-
-function manualSync() {
-  showToast('☁️ Syncing...', 'success');
-  autoSync();
-}
-
-// ==================== SETTINGS ====================
+// ==================== TOAST ====================
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1883,10 +1478,6 @@ document.addEventListener('keydown', e => {
 
 initDB().then(() => {
   console.log('DB ready');
-  // Handle OAuth callback
-  handleOAuthCallback();
-  // Update drive status
-  updateDriveStatusUI();
   // Set today's date in all date inputs
   const today = todayDate();
   ['addDate','givenDate','returnDate'].forEach(id => {
