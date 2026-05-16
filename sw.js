@@ -1,4 +1,4 @@
-const CACHE_NAME = 'loan-manager-v5';
+const CACHE_NAME = 'loan-manager-v6';
 const ASSETS = [
   './',
   './index.html',
